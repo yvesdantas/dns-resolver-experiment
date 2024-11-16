@@ -12,6 +12,33 @@ management:
   interface: 127.0.0.1@5000
 lua:
   script: |
-    policy.add(
-          policy.suffix(policy.DENY,
-                  policy.todnames({'globo.com.br.','google.com.'})))
+
+    -- deny list of domains, while returning NXDOMAIN
+    -- sources -> https://knot-resolver.readthedocs.io/en/stable/modules-policy.html
+    -- sources -> https://docs.whalebone.io/en/immunity/knot_tips_tricks.html#deny-list-of-domains
+
+    function endswith(str, ending)
+        -- Check if the ending is longer than the string
+        if #ending > #str then
+            return false
+        end
+        -- Compare the end of the string with the ending
+        return string.sub(str, -#ending) == ending
+    end
+
+    function filter_blocklist(action, target_qtype, block_qname)
+        return function (state, query)
+            query_check = endswith(kres.dname2str(query.sname), block_qname)
+            if query.stype == target_qtype and query_check then
+                return action
+            else
+                return nil
+            end
+        end
+    end
+    
+    blocklist = {'google.com.', 'globo.com.br.'}
+    
+    for i, dname in ipairs(blocklist) do
+      policy.add(filter_blocklist(policy.DENY, kres.type.A, dname))
+    end
