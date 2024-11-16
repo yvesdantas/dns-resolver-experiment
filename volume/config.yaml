@@ -14,6 +14,7 @@ lua:
   script: |
 
     -- deny list of domains, while returning NXDOMAIN
+    -- sources -> https://www.knot-resolver.cz/documentation/latest/config-lua.html
     -- sources -> https://knot-resolver.readthedocs.io/en/stable/modules-policy.html
     -- sources -> https://docs.whalebone.io/en/immunity/knot_tips_tricks.html#deny-list-of-domains
 
@@ -37,8 +38,9 @@ lua:
         end
     end
     
-    blocklist = {'google.com.', 'globo.com.br.'}
-    
-    for i, dname in ipairs(blocklist) do
-      policy.add(filter_blocklist(policy.DENY, kres.type.A, dname))
+    file = io.open("/etc/knot-resolver/blocklist.rpz", "r")
+    for line in file:lines() do
+        dname = string.gsub(line, "[\r\n]+$", "")
+        policy.add(filter_blocklist(policy.DENY, kres.type.A, dname))
     end
+    file:close()
