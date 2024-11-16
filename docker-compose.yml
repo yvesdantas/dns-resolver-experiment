@@ -1,0 +1,17 @@
+services:
+  dns-resolver:
+    image: docker.io/cznic/knot-resolver:6
+    network_mode: "host"
+    volumes:
+      - ./volume:/etc/knot-resolver
+  traffic-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    network_mode: "host" 
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./capture:/pcap 
+    command: ["-i", "lo", "port", "53", "-w", "/pcap/traffic.pcap"]

@@ -1,1 +1,2 @@
-# dns-resolver-experiment
+# DNS Resolver Experiment
+This experiment consists in running the containerized version of [Knot Resolver](https://www.knot-resolver.cz/) and configure the DNS Resolver to return NXDOMAIN when querying for A record for specific domains.
